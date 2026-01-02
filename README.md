@@ -135,3 +135,53 @@ APIs tested using Postman
 JWT token passed in headers:
 Authorization: Bearer <token>
 
+🔐 Admin Account Creation Policy
+Why Admin Is Created Manually
+In this project, Admin accounts are not created via the public registration API.
+This is an intentional security design decision to prevent:
+Unauthorized users registering themselves as admins
+Privilege escalation attacks
+Accidental exposure of admin-level access
+Only trusted system operators (e.g., company, backend team, DBA) can create admin users directly in the database.
+This follows real-world production practices where:
+Admins are provisioned internally
+Public signup is restricted to normal users
+
+🛠 How Admin Is Created (Manual Database Entry)
+Admins are created by inserting a record into the users table with role = 'admin'.
+Example SQL Insert (PostgreSQL)
+INSERT INTO users (name, email, password, role)
+VALUES (
+  'System Admin',
+  'admin@example.com',
+  '$2b$10$w8Vb9Ww9wGfZ5q7u1mH9uO9Q6Rk0RZzXnRrMZpR0x8YpQJZK8kZ0y',
+  'admin'
+);
+
+| Field    | Value               |
+| -------- | ------------------- |
+| Email    | `admin@example.com` |
+| Password | `admin123`          |
+| Role     | `admin`             |
+
+
+🧪 How to Generate Admin Password Hash
+To generate the bcrypt hash manually:
+
+Using Node.js REPL
+
+node
+const bcrypt = require("bcrypt");
+bcrypt.hash("admin123", 10).then(console.log);
+
+Copy the output hash and store it in the database.
+
+🖥 Login on Website
+On the login page:
+Select Login as Admin
+Enter the admin email and password
+Admin dashboard access is granted
+If:
+A user tries to log in as admin → ❌ Access denied
+An admin tries to log in as user → ❌ Access denied
+This ensures strict role separation.
